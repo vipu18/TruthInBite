@@ -50,19 +50,22 @@ cd TruthInBite
 ```bash
 pip install -r requirements.txt
 ```
-
-3. **Set up environment variables**
+3. **Get Google AI Studio API Key**
+```bash
+Get your Google AI Studio API key by visiting [ai.google.dev](https://ai.google.dev/gemini-api/docs/api-key), signing in with your Google account, clicking "Get API key in Google AI Studio", creating or selecting a Google Cloud project, and then clicking "Create API key" to generate your free Gemini API key.
+```
+4. **Set up environment variables**
 Create a `.env` file in the root directory:
 ```bash
 GEMINI_API_KEY="your_google_ai_api_key_here"
 ```
 
-4. **Run the application**
+5. **Run the application**
 ```bash
 streamlit run app.py
 ```
 
-5. **Access the app**
+6. **Access the app**
 Open your browser and navigate to `http://localhost:8501`
 
 ## 🛠️ Technology Stack
