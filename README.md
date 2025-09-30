@@ -1,5 +1,5 @@
 # Create the complete README.md file content based on the TruthInBite project files
-readme_content = """# TruthInBite 🍎
+TruthInBite 🍎
 
 **AI-Powered Food Label Analyzer with Ingredient-Based Health Scoring**
 
