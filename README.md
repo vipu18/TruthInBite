@@ -1,5 +1,4 @@
-# Create the complete README.md file content based on the TruthInBite project files
-TruthInBite 🍎
+# TruthInBite 🍎
 
 **AI-Powered Food Label Analyzer with Ingredient-Based Health Scoring**
 
