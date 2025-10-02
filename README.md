@@ -1,6 +1,6 @@
 ## Contribution Guidelines  
 
-I need food labels to test my project. Contributors are requested to use the **main branch** and add *only food label editing code*.  
+I need food labels to test my project. Contributors are requested to use the **main branch** and add *only food label image*.  
 Changes to the README will **not** be counted as valid contributions. Your contributions are highly appreciated!  
 
 ### Dataset Contribution Format  
