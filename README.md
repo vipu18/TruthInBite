@@ -8,7 +8,7 @@ Changes to the README or Code will **not** be counted as valid contributions. Yo
   - `itemname.jpg`  
   - `itemname.jpeg`  
   - `itemname.webp`  
-- All images must be placed inside the **`dataset`** folder before adding.  
+- All images must be placed inside the **`DataSet`** folder before adding.  
 
 # TruthInBite 🍎
 
