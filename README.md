@@ -1,6 +1,6 @@
 ## Contribution Guidelines  
 
-I need food labels to test my project. Contributors are requested to use the **main branch** and add *only food label image*.  
+I need food labels to test my project. Contributors are requested to use the **main branch** and add *only food label image with nutrition facts*.  
 Changes to the README or Code will **not** be counted as valid contributions. Your contributions are highly appreciated!  
 
 ### Dataset Contribution Format  
