@@ -1,15 +1,3 @@
-## Contribution Guidelines  
-
-I need food labels to test my project. Contributors are requested to use the **main branch** and add *only food label image with nutrition facts*.  
-Changes to the README or Code will **not** be counted as valid contributions. Your contributions are highly appreciated!  
-
-### Dataset Contribution Format  
-- File name format:  
-  - `itemname.jpg`  
-  - `itemname.jpeg`  
-  - `itemname.webp`  
-- All images must be placed inside the **`dataset`** folder before adding.  
-
 # TruthInBite 🍎
 
 **AI-Powered Food Label Analyzer with Ingredient-Based Health Scoring**
