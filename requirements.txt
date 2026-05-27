@@ -1,5 +1,5 @@
 streamlit
 Pillow
 pandas
-google-generativeai
+google-genai
 python-dotenv

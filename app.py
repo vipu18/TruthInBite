@@ -284,7 +284,7 @@ if uploaded_file is not None:
             col1, col2 = st.columns([1, 2])
 
             with col1:
-                st.image(image, caption="Product Label", use_container_width=True)
+                st.image(image, caption="Product Label", width='stretch')
 
             with col2:
                 # Health Score Analysis
@@ -357,7 +357,7 @@ if uploaded_file is not None:
                 if product.get("ingredients"):
                     ingredients_df = pd.DataFrame(product["ingredients"])
                     st.dataframe(
-                        ingredients_df, use_container_width=True, hide_index=True
+                        ingredients_df, width='stretch', hide_index=True
                     )
 
                     # Enhanced quality assessment with background highlight
@@ -424,7 +424,7 @@ if uploaded_file is not None:
 
                     nutrition_df.rename(columns={"Value": "Per 100g"}, inplace=True)
                     st.dataframe(
-                        nutrition_df, use_container_width=True, hide_index=True
+                        nutrition_df, width='stretch', hide_index=True
                     )
                 else:
                     st.warning("No nutrition information found")
@@ -434,7 +434,7 @@ if uploaded_file is not None:
                     allergen_df = pd.DataFrame(
                         product["allergens"], columns=["Allergen"]
                     )
-                    st.dataframe(allergen_df, use_container_width=True, hide_index=True)
+                    st.dataframe(allergen_df, width='stretch', hide_index=True)
                 else:
                     st.success("✅ No allergen information found")
 

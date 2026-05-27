@@ -1,6 +1,7 @@
-import google.generativeai as genai
+from google import genai
 import os
 import json
+import time
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -8,28 +9,54 @@ API_KEY = os.getenv("GEMINI_API_KEY")
 
 if API_KEY:
     try:
-        genai.configure(api_key=API_KEY)
+        _client = genai.Client(api_key=API_KEY)
     except Exception as e:
         print(f"Error configuring API: {e}")
+        _client = None
 else:
     print("API Key not found!")
+    _client = None
 
-# Cache for model instances
-_model_cache = {}
+_MODEL_FALLBACK_CHAIN = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.0-flash-lite"]
 
 
-def get_model(model_name="gemini-2.5-flash"):
-    """Get cached model instance for better performance"""
-    if model_name not in _model_cache:
-        _model_cache[model_name] = genai.GenerativeModel(model_name)
-    return _model_cache[model_name]
+def _log(msg):
+    print(f"[TruthInBite] {msg}", flush=True)
+
+
+def _generate_with_retry(contents, retries=3, delay=5):
+    """Try each model in the fallback chain with retries on 503; skip on 429."""
+    last_exc = None
+    for model in _MODEL_FALLBACK_CHAIN:
+        for attempt in range(retries):
+            _log(f"Calling {model} (attempt {attempt + 1}/{retries})...")
+            try:
+                response = _client.models.generate_content(model=model, contents=contents)
+                _log(f"Response received from {model}.")
+                return response
+            except Exception as e:
+                msg = str(e)
+                if "429" in msg or "RESOURCE_EXHAUSTED" in msg:
+                    _log(f"{model} quota exhausted (429). Skipping to next model.")
+                    last_exc = e
+                    break  # no point retrying same model
+                elif "503" in msg or "UNAVAILABLE" in msg:
+                    if attempt < retries - 1:
+                        wait = delay * (attempt + 1)
+                        _log(f"{model} overloaded (503). Retrying in {wait}s...")
+                        time.sleep(wait)
+                    else:
+                        _log(f"{model} failed after {retries} attempts. Trying next model.")
+                        last_exc = e
+                else:
+                    raise
+    raise last_exc
 
 
 def get_structured_data_from_gemini(pil_image):
     """Extract structured data from food label image"""
     try:
-        model = get_model("gemini-2.5-flash")
-
+        _log("Step 1/3 — Extracting structured data from image...")
         prompt = """
         Analyze this food label image and extract data accurately.
         Return ONLY a valid JSON array with this structure:
@@ -66,7 +93,7 @@ def get_structured_data_from_gemini(pil_image):
         - Include all allergen warnings
         """
 
-        response = model.generate_content([prompt, pil_image])
+        response = _generate_with_retry([prompt, pil_image])
         json_text = response.text.strip().replace("``````", "").strip()
 
         # Clean up JSON
@@ -77,19 +104,21 @@ def get_structured_data_from_gemini(pil_image):
             json_text = json_text[start_idx:end_idx]
 
         data = json.loads(json_text)
+        _log(f"Extracted product: {data[0].get('product_name', 'Unknown') if isinstance(data, list) and data else 'Unknown'}")
         return data
 
     except json.JSONDecodeError:
+        _log("ERROR: AI returned invalid JSON.")
         return {"error": "AI returned invalid JSON. Please try with a clearer image."}
     except Exception as e:
+        _log(f"ERROR: {e}")
         return {"error": f"Error processing image: {str(e)}"}
 
 
 def get_ai_health_summary(product_data, health_profile=None):
     """Get ingredient-based health score with separate WHO compliance check"""
     try:
-        model = get_model("gemini-2.5-flash")
-
+        _log("Step 2/3 — Generating health summary & WHO compliance check...")
         prompt = f"""
         Analyze this food product as a nutrition expert. Score based on INGREDIENT QUALITY, then separately check WHO compliance.
 
@@ -153,7 +182,7 @@ def get_ai_health_summary(product_data, health_profile=None):
         }}
         """
 
-        response = model.generate_content(prompt)
+        response = _generate_with_retry(prompt)
         json_text = response.text.strip().replace("``````", "").strip()
 
         # Extract JSON
@@ -163,9 +192,12 @@ def get_ai_health_summary(product_data, health_profile=None):
         if start_idx != -1 and end_idx != 0:
             json_text = json_text[start_idx:end_idx]
 
-        return json.loads(json_text)
+        result = json.loads(json_text)
+        _log(f"Health score: {result.get('score', 'N/A')}/100 — {result.get('verdict', '')}")
+        return result
 
     except Exception as e:
+        _log(f"ERROR: {e}")
         return {
             "score": 0,
             "verdict": "Analysis failed",
@@ -180,8 +212,7 @@ def get_healthy_alternatives(
 ):
     """Get Indian healthy alternatives at similar cost"""
     try:
-        model = get_model("gemini-2.5-flash")
-
+        _log("Step 3/3 — Finding healthy Indian alternatives...")
         prompt = f"""
         Suggest healthier Indian alternatives for this food product:
         
@@ -211,7 +242,7 @@ def get_healthy_alternatives(
         Provide 3-5 alternatives focusing on cleaner, more natural ingredients.
         """
 
-        response = model.generate_content(prompt)
+        response = _generate_with_retry(prompt)
         json_text = response.text.strip().replace("``````", "").strip()
 
         # Extract JSON
@@ -221,7 +252,10 @@ def get_healthy_alternatives(
         if start_idx != -1 and end_idx != 0:
             json_text = json_text[start_idx:end_idx]
 
-        return json.loads(json_text)
+        result = json.loads(json_text)
+        _log(f"Found {len(result)} alternative(s). Done.")
+        return result
 
     except Exception as e:
+        _log(f"ERROR: {e}")
         return []
